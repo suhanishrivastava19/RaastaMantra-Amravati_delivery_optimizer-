@@ -1,0 +1,451 @@
+{% extends "base.html" %}
+{% block title %}Raasta Mantra — Home{% endblock %}
+
+{% block extra_styles %}
+<style>
+.hero {
+    background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 60%, #0d2060 100%);
+    min-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    padding: 4rem 2rem;
+}
+
+/* Animated nodes/edges background */
+.hero-canvas {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.node-dot {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background: var(--cyan);
+    border-radius: 50%;
+    opacity: 0.4;
+    animation: nodePulse 3s ease-in-out infinite;
+}
+
+@keyframes nodePulse {
+    0%, 100% { opacity: 0.2; transform: scale(1); }
+    50%       { opacity: 0.6; transform: scale(1.5); }
+}
+
+.hero-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+        linear-gradient(rgba(0,229,255,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,229,255,0.04) 1px, transparent 1px);
+    background-size: 50px 50px;
+}
+
+.hero-glow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(0,229,255,0.12) 0%, transparent 65%);
+    pointer-events: none;
+}
+
+.hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0,229,255,0.12);
+    border: 1px solid rgba(0,229,255,0.35);
+    color: var(--cyan);
+    padding: 8px 18px;
+    border-radius: 30px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    margin-bottom: 2rem;
+    position: relative;
+    z-index: 1;
+    animation: fadeInUp 0.5s ease 0.1s forwards;
+    opacity: 0;
+}
+
+.hero-badge .dot {
+    width: 8px;
+    height: 8px;
+    background: var(--green);
+    border-radius: 50%;
+    animation: blink 1.5s ease-in-out infinite;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.3; }
+}
+
+.hero-greeting {
+    font-family: var(--font-display);
+    font-size: 3.5rem;
+    font-weight: 800;
+    color: var(--white);
+    line-height: 1.1;
+    margin-bottom: 1.5rem;
+    position: relative;
+    z-index: 1;
+    animation: fadeInUp 0.5s ease 0.2s forwards;
+    opacity: 0;
+}
+
+.hero-greeting .highlight {
+    color: var(--cyan);
+    position: relative;
+    display: inline-block;
+}
+
+.hero-greeting .highlight::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--cyan), transparent);
+    border-radius: 2px;
+}
+
+.hero-desc {
+    color: rgba(255,255,255,0.6);
+    font-size: 1.1rem;
+    line-height: 1.7;
+    max-width: 540px;
+    margin: 0 auto 3rem;
+    position: relative;
+    z-index: 1;
+    animation: fadeInUp 0.5s ease 0.3s forwards;
+    opacity: 0;
+}
+
+.hero-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    position: relative;
+    z-index: 1;
+    animation: fadeInUp 0.5s ease 0.4s forwards;
+    opacity: 0;
+}
+
+.hero-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px 32px;
+    border-radius: 12px;
+    font-family: var(--font-display);
+    font-size: 0.95rem;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+    border: none;
+    transition: all 0.3s;
+}
+
+.hero-btn-primary {
+    background: linear-gradient(135deg, var(--cyan), var(--cyan-dim));
+    color: var(--navy);
+}
+
+.hero-btn-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 35px rgba(0,229,255,0.45);
+}
+
+.hero-btn-secondary {
+    background: rgba(255,255,255,0.08);
+    color: var(--white);
+    border: 1.5px solid rgba(255,255,255,0.2);
+    backdrop-filter: blur(10px);
+}
+
+.hero-btn-secondary:hover {
+    background: rgba(255,255,255,0.15);
+    transform: translateY(-3px);
+}
+
+.hero-btn-green {
+    background: linear-gradient(135deg, var(--green), #00897b);
+    color: var(--white);
+}
+
+.hero-btn-green:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 35px rgba(0,200,83,0.4);
+}
+
+/* Stats bar */
+.stats-bar {
+    background: var(--card-bg);
+    border-top: 1px solid var(--card-border);
+    padding: 1.5rem 2rem;
+    display: flex;
+    justify-content: center;
+    gap: 4rem;
+    flex-wrap: wrap;
+}
+
+.stat-item {
+    text-align: center;
+    animation: fadeInUp 0.5s ease forwards;
+    opacity: 0;
+}
+
+.stat-item:nth-child(1) { animation-delay: 0.5s; }
+.stat-item:nth-child(2) { animation-delay: 0.6s; }
+.stat-item:nth-child(3) { animation-delay: 0.7s; }
+.stat-item:nth-child(4) { animation-delay: 0.8s; }
+
+.stat-num {
+    font-family: var(--font-display);
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: var(--cyan);
+}
+
+.stat-lbl {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-top: 2px;
+}
+
+/* Features section */
+.features-section {
+    padding: 4rem 2rem;
+    background: var(--off-white);
+}
+
+.features-title {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--text-main);
+    text-align: center;
+    margin-bottom: 0.75rem;
+}
+
+.features-sub {
+    color: var(--text-muted);
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.feature-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    padding: 2rem;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+}
+
+.feature-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+}
+
+.feature-card.card-cyan::before  { background: linear-gradient(90deg, var(--cyan), var(--cyan-dim)); }
+.feature-card.card-green::before { background: linear-gradient(90deg, var(--green), #00897b); }
+.feature-card.card-amber::before { background: linear-gradient(90deg, var(--amber), #ff8f00); }
+.feature-card.card-navy::before  { background: linear-gradient(90deg, var(--navy), var(--navy-light)); }
+
+.feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-md);
+}
+
+.feature-icon-wrap {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    margin-bottom: 1.25rem;
+}
+
+.feature-icon-wrap.cyan  { background: rgba(0,229,255,0.1);  color: var(--cyan); }
+.feature-icon-wrap.green { background: rgba(0,200,83,0.1);   color: var(--green); }
+.feature-icon-wrap.amber { background: rgba(255,193,7,0.1);  color: var(--amber); }
+.feature-icon-wrap.navy  { background: rgba(10,15,46,0.08);  color: var(--navy-light); }
+
+.feature-name {
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-main);
+    margin-bottom: 0.5rem;
+}
+
+.feature-desc {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    line-height: 1.6;
+}
+
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- ── Hero ── -->
+<section class="hero">
+    <div class="hero-canvas">
+        <div class="hero-grid"></div>
+        <div class="hero-glow"></div>
+        <!-- Scattered nodes -->
+        <div class="node-dot" style="top:15%;left:10%;animation-delay:0s"></div>
+        <div class="node-dot" style="top:25%;left:85%;animation-delay:0.5s"></div>
+        <div class="node-dot" style="top:65%;left:5%;animation-delay:1s"></div>
+        <div class="node-dot" style="top:75%;left:90%;animation-delay:1.5s"></div>
+        <div class="node-dot" style="top:45%;left:20%;animation-delay:0.8s"></div>
+        <div class="node-dot" style="top:30%;left:70%;animation-delay:2s"></div>
+        <div class="node-dot" style="top:80%;left:40%;animation-delay:0.3s"></div>
+        <div class="node-dot" style="top:10%;left:55%;animation-delay:1.2s"></div>
+    </div>
+
+    <div class="hero-badge">
+        <span class="dot"></span>
+        System Active — Amravati Road Network Loaded
+    </div>
+
+    <h1 class="hero-greeting">
+        Hello, <span class="highlight">{{ username }}</span> 👋<br>
+        Ready to Optimize?
+    </h1>
+
+    <p class="hero-desc">
+        Use cutting-edge A* and Uniform Cost Search algorithms to find the
+        shortest and most optimal delivery routes across Amravati city in real-time.
+    </p>
+
+    <div class="hero-actions">
+        <a href="/optimize" class="hero-btn hero-btn-primary">
+            <i class="fas fa-route"></i>
+            Start Route Optimization
+        </a>
+        <a href="/dashboard" class="hero-btn hero-btn-secondary">
+            <i class="fas fa-chart-bar"></i>
+            View Dashboard
+        </a>
+        <a href="/feedback" class="hero-btn hero-btn-green">
+            <i class="fas fa-star"></i>
+            Give Feedback
+        </a>
+    </div>
+</section>
+
+<!-- ── Stats Bar ── -->
+<div class="stats-bar">
+    <div class="stat-item">
+        <div class="stat-num" id="stat-nodes">—</div>
+        <div class="stat-lbl">Graph Nodes</div>
+    </div>
+    <div class="stat-item">
+        <div class="stat-num" id="stat-edges">—</div>
+        <div class="stat-lbl">Road Segments</div>
+    </div>
+    <div class="stat-item">
+        <div class="stat-num">2</div>
+        <div class="stat-lbl">Algorithms</div>
+    </div>
+    <div class="stat-item">
+        <div class="stat-num">∞</div>
+        <div class="stat-lbl">Routes Possible</div>
+    </div>
+</div>
+
+<!-- ── Features Section ── -->
+<section class="features-section">
+    <h2 class="features-title">What This System Offers</h2>
+    <p class="features-sub">Powered by real Amravati road data and advanced AI algorithms</p>
+
+    <div class="features-grid">
+        <div class="feature-card card-cyan">
+            <div class="feature-icon-wrap cyan"><i class="fas fa-star"></i></div>
+            <div class="feature-name">A* Algorithm</div>
+            <div class="feature-desc">Heuristic-guided search finds the shortest path faster than brute-force. Uses Haversine distance as an admissible heuristic.</div>
+        </div>
+
+        <div class="feature-card card-green">
+            <div class="feature-icon-wrap green"><i class="fas fa-money-bill-wave"></i></div>
+            <div class="feature-name">Uniform Cost Search</div>
+            <div class="feature-desc">Explores routes in order of cumulative cost, guaranteeing the globally optimal (minimum cost) path.</div>
+        </div>
+
+        <div class="feature-card card-amber">
+            <div class="feature-icon-wrap amber"><i class="fas fa-map-marked-alt"></i></div>
+            <div class="feature-name">Real City Map</div>
+            <div class="feature-desc">Live Amravati road network from OpenStreetMap via OSMnx. Click any point on the real city map to set waypoints.</div>
+        </div>
+
+        <div class="feature-card card-navy">
+            <div class="feature-icon-wrap navy"><i class="fas fa-chart-pie"></i></div>
+            <div class="feature-name">Analytics Dashboard</div>
+            <div class="feature-desc">Compare algorithm performance with interactive Chart.js visualizations. Track efficiency, time, and cost metrics.</div>
+        </div>
+
+        <div class="feature-card card-cyan">
+            <div class="feature-icon-wrap cyan"><i class="fas fa-truck"></i></div>
+            <div class="feature-name">Delivery Categories</div>
+            <div class="feature-desc">Normal, Urgent, and Delivery modes with different speed profiles, cost rates, and traffic modelling.</div>
+        </div>
+
+        <div class="feature-card card-green">
+            <div class="feature-icon-wrap green"><i class="fas fa-database"></i></div>
+            <div class="feature-name">MongoDB Storage</div>
+            <div class="feature-desc">All routes, users, and feedback stored persistently in MongoDB for historical analysis and improvement.</div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// Load graph info
+fetch('/api/graph_info')
+    .then(r => r.json())
+    .then(d => {
+        document.getElementById('stat-nodes').textContent = d.nodes?.toLocaleString() || '20+';
+        document.getElementById('stat-edges').textContent = d.edges?.toLocaleString() || '60+';
+    })
+    .catch(() => {
+        document.getElementById('stat-nodes').textContent = '20+';
+        document.getElementById('stat-edges').textContent = '60+';
+    });
+</script>
+{% endblock %}

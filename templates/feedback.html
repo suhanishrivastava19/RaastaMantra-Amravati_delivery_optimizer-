@@ -1,0 +1,332 @@
+{% extends "base.html" %}
+{% block title %}Raasta Mantra — Give Feedback{% endblock %}
+
+{% block extra_styles %}
+<style>
+.feedback-wrapper {
+    min-height: calc(100vh - 64px);
+    background: var(--off-white);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.feedback-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 20px;
+    padding: 2.5rem;
+    width: 100%;
+    max-width: 560px;
+    box-shadow: var(--shadow-md);
+    animation: fadeInUp 0.5s ease forwards;
+}
+
+.fb-header { margin-bottom: 2rem; text-align: center; }
+
+.fb-emoji {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    display: block;
+    animation: bounce 1s ease infinite alternate;
+}
+
+@keyframes bounce {
+    from { transform: translateY(0); }
+    to   { transform: translateY(-8px); }
+}
+
+.fb-title {
+    font-family: var(--font-display);
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: var(--text-main);
+    margin-bottom: 0.5rem;
+}
+
+.fb-sub { color: var(--text-muted); font-size: 0.9rem; }
+
+/* ── Star Rating ── */
+.star-rating {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin: 1.25rem 0;
+}
+
+.star {
+    font-size: 2.2rem;
+    cursor: pointer;
+    transition: transform 0.15s ease;
+    color: #d1d5db;
+    user-select: none;
+}
+
+.star:hover { transform: scale(1.25); }
+.star.active { color: var(--amber); }
+
+.rating-label {
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    min-height: 1.2em;
+    margin-bottom: 1rem;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+
+/* ── Form ── */
+.form-group { margin-bottom: 1.25rem; }
+
+.form-label {
+    display: block;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 6px;
+}
+
+.form-control {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid var(--card-border);
+    border-radius: 10px;
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    background: var(--off-white);
+    color: var(--text-main);
+    transition: all 0.2s;
+    outline: none;
+    resize: vertical;
+}
+
+.form-control:focus {
+    border-color: var(--cyan);
+    box-shadow: 0 0 0 3px rgba(0,229,255,0.12);
+    background: var(--card-bg);
+}
+
+.submit-btn {
+    width: 100%;
+    padding: 15px;
+    background: linear-gradient(135deg, var(--navy), var(--navy-light));
+    color: var(--white);
+    border: none;
+    border-radius: 10px;
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.submit-btn:hover {
+    background: linear-gradient(135deg, var(--navy-light), var(--cyan-dim));
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(10,15,46,0.3);
+}
+
+.submit-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+/* ── Success State ── */
+.success-state {
+    text-align: center;
+    padding: 2rem;
+    display: none;
+}
+
+.success-icon { font-size: 4rem; margin-bottom: 1rem; }
+
+.success-title {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--text-main);
+    margin-bottom: 0.5rem;
+}
+
+.success-sub { color: var(--text-muted); margin-bottom: 2rem; }
+
+/* ── Character counter ── */
+.char-counter {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    text-align: right;
+    margin-top: 4px;
+}
+
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="feedback-wrapper">
+    <div class="feedback-card">
+
+        <!-- Header -->
+        <div class="fb-header">
+            <span class="fb-emoji">💬</span>
+            <h2 class="fb-title">Share Your Experience</h2>
+            <p class="fb-sub">Help us improve Raasta Mantra for everyone in Amravati</p>
+        </div>
+
+        <!-- Form -->
+        <div id="feedback-form">
+
+            <!-- Star Rating -->
+            <label class="form-label" style="text-align:center;display:block">How was your experience?</label>
+            <div class="star-rating" id="star-rating">
+                <span class="star" data-val="1" onclick="setRating(1)">★</span>
+                <span class="star" data-val="2" onclick="setRating(2)">★</span>
+                <span class="star" data-val="3" onclick="setRating(3)">★</span>
+                <span class="star" data-val="4" onclick="setRating(4)">★</span>
+                <span class="star" data-val="5" onclick="setRating(5)">★</span>
+            </div>
+            <div class="rating-label" id="rating-label">Click to rate</div>
+
+            <!-- Name -->
+            <div class="form-group">
+                <label class="form-label">Your Name</label>
+                <input type="text" class="form-control" id="fb-name"
+                       placeholder="Enter your name" value="{{ username }}">
+            </div>
+
+            <!-- Message -->
+            <div class="form-group">
+                <label class="form-label">Your Feedback</label>
+                <textarea class="form-control" id="fb-message" rows="4"
+                          placeholder="Tell us about your experience with the route optimization..." maxlength="500"
+                          oninput="updateCounter()"></textarea>
+                <div class="char-counter"><span id="char-count">0</span>/500</div>
+            </div>
+
+            <!-- Error -->
+            <div id="fb-error" style="background:rgba(255,82,82,0.1);border:1px solid rgba(255,82,82,0.3);color:#ef4444;padding:10px 14px;border-radius:8px;font-size:0.85rem;margin-bottom:1rem;display:none"></div>
+
+            <button class="submit-btn" onclick="submitFeedback()">
+                <i class="fas fa-paper-plane"></i>
+                Submit Feedback
+            </button>
+        </div>
+
+        <!-- Success State -->
+        <div class="success-state" id="success-state">
+            <div class="success-icon">🎉</div>
+            <div class="success-title">Thank You!</div>
+            <div class="success-sub">Your feedback helps make Raasta Mantra better for everyone.</div>
+
+            <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap">
+                <a href="/optimize" class="btn btn-primary">
+                    <i class="fas fa-route"></i> Optimize Another Route
+                </a>
+                <a href="/dashboard" class="btn btn-secondary">
+                    <i class="fas fa-chart-bar"></i> View Dashboard
+                </a>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+let selectedRating = 0;
+
+const ratingLabels = {
+    1: '😞 Poor — Needs significant improvement',
+    2: '😐 Fair — Could be better',
+    3: '😊 Good — Works well',
+    4: '😄 Great — Really enjoyed it!',
+    5: '🤩 Excellent — Perfect experience!'
+};
+
+function setRating(val) {
+    selectedRating = val;
+    document.querySelectorAll('.star').forEach((s, i) => {
+        s.classList.toggle('active', i < val);
+    });
+    document.getElementById('rating-label').textContent = ratingLabels[val] || '';
+    document.getElementById('rating-label').style.color = val >= 4 ? 'var(--green)' : val >= 3 ? 'var(--amber)' : 'var(--red)';
+}
+
+// Hover effects
+document.querySelectorAll('.star').forEach(star => {
+    star.addEventListener('mouseover', () => {
+        const v = parseInt(star.getAttribute('data-val'));
+        document.querySelectorAll('.star').forEach((s, i) => {
+            s.style.color = i < v ? 'var(--amber)' : '#d1d5db';
+        });
+    });
+    star.addEventListener('mouseout', () => {
+        document.querySelectorAll('.star').forEach((s, i) => {
+            s.style.color = i < selectedRating ? 'var(--amber)' : '#d1d5db';
+        });
+    });
+});
+
+function updateCounter() {
+    const msg = document.getElementById('fb-message').value;
+    document.getElementById('char-count').textContent = msg.length;
+}
+
+async function submitFeedback() {
+    const name = document.getElementById('fb-name').value.trim();
+    const message = document.getElementById('fb-message').value.trim();
+    const errorDiv = document.getElementById('fb-error');
+
+    if (!selectedRating) {
+        errorDiv.textContent = '⚠️ Please select a star rating before submitting.';
+        errorDiv.style.display = 'block';
+        return;
+    }
+
+    if (!message) {
+        errorDiv.textContent = '⚠️ Please write a brief feedback message.';
+        errorDiv.style.display = 'block';
+        return;
+    }
+
+    errorDiv.style.display = 'none';
+
+    const btn = document.querySelector('.submit-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<div class="spinner" style="width:18px;height:18px;border-width:2px"></div> Submitting...';
+
+    try {
+        const resp = await fetch('/api/submit_feedback', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, rating: selectedRating, message })
+        });
+
+        const data = await resp.json();
+
+        if (data.success) {
+            document.getElementById('feedback-form').style.display = 'none';
+            document.getElementById('success-state').style.display = 'block';
+        } else {
+            errorDiv.textContent = data.error || 'Submission failed. Try again.';
+            errorDiv.style.display = 'block';
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Feedback';
+        }
+    } catch(e) {
+        errorDiv.textContent = 'Network error. Please try again.';
+        errorDiv.style.display = 'block';
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Feedback';
+    }
+}
+</script>
+{% endblock %}

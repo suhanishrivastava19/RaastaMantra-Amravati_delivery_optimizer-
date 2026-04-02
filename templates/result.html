@@ -1,0 +1,582 @@
+{% extends "base.html" %}
+{% block title %}Raasta Mantra — Route Result{% endblock %}
+
+{% block extra_styles %}
+<style>
+.result-layout {
+    display: grid;
+    grid-template-columns: 420px 1fr;
+    height: calc(100vh - 64px);
+}
+
+/* ── Result Panel ── */
+.result-panel {
+    background: var(--card-bg);
+    border-right: 1px solid var(--card-border);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.result-header {
+    background: linear-gradient(135deg, var(--navy), var(--navy-light));
+    padding: 1.5rem;
+    flex-shrink: 0;
+}
+
+.result-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(0,229,255,0.15);
+    border: 1px solid rgba(0,229,255,0.3);
+    color: var(--cyan);
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.result-title {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--white);
+    margin-bottom: 0.25rem;
+}
+
+.result-subtitle { color: rgba(255,255,255,0.55); font-size: 0.85rem; }
+
+/* ── Metric Cards ── */
+.result-body { padding: 1.25rem; flex: 1; }
+
+.big-metric-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 1rem;
+}
+
+.big-metric {
+    background: var(--off-white);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    padding: 1rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.big-metric::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+}
+
+.big-metric.cyan-accent::before  { background: var(--cyan); }
+.big-metric.green-accent::before { background: var(--green); }
+.big-metric.amber-accent::before { background: var(--amber); }
+.big-metric.navy-accent::before  { background: var(--navy); }
+
+.bm-icon { font-size: 1.5rem; margin-bottom: 6px; }
+.bm-val {
+    font-family: var(--font-display);
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: var(--text-main);
+    line-height: 1;
+}
+.bm-unit { font-size: 0.7rem; color: var(--text-muted); margin-left: 3px; }
+.bm-label { font-size: 0.72rem; color: var(--text-muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.04em; }
+
+/* ── Side-by-side comparison ── */
+.comparison-block {
+    background: var(--off-white);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.comparison-title {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.75rem;
+}
+
+.comparison-row {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    padding: 8px;
+    background: var(--card-bg);
+    border-radius: 8px;
+}
+
+.comp-left { text-align: right; font-size: 0.85rem; font-weight: 600; }
+.comp-label { font-size: 0.7rem; color: var(--text-muted); text-align: center; text-transform: uppercase; }
+.comp-right { font-size: 0.85rem; font-weight: 600; }
+
+.algo-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: 10px;
+    font-size: 0.68rem;
+    font-weight: 600;
+}
+
+.algo-pill.green-pill { background: rgba(0,200,83,0.15); color: var(--green); }
+.algo-pill.cyan-pill  { background: rgba(0,229,255,0.15); color: var(--cyan); }
+
+/* ── Traffic ── */
+.traffic-bar-wrap {
+    background: var(--off-white);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.traffic-level-indicator {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.traffic-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    animation: trafficPulse 2s infinite;
+}
+
+@keyframes trafficPulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50%       { transform: scale(1.3); opacity: 0.7; }
+}
+
+.traffic-dot.low    { background: var(--green); }
+.traffic-dot.moderate { background: var(--amber); }
+.traffic-dot.high   { background: var(--red); }
+
+.bars-row {
+    display: flex;
+    gap: 4px;
+    height: 20px;
+}
+
+.traffic-bar {
+    flex: 1;
+    border-radius: 3px;
+    background: var(--card-border);
+    position: relative;
+    overflow: hidden;
+}
+
+.traffic-bar.active::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 3px;
+    animation: barFill 1s ease forwards;
+}
+
+.traffic-bar.active.low::after    { background: var(--green); animation-delay: calc(var(--i) * 0.1s); }
+.traffic-bar.active.moderate::after { background: var(--amber); animation-delay: calc(var(--i) * 0.1s); }
+.traffic-bar.active.high::after   { background: var(--red); animation-delay: calc(var(--i) * 0.1s); }
+
+@keyframes barFill {
+    from { transform: scaleY(0); transform-origin: bottom; }
+    to   { transform: scaleY(1); transform-origin: bottom; }
+}
+
+/* ── Action buttons ── */
+.action-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: auto;
+    padding: 1.25rem;
+    border-top: 1px solid var(--card-border);
+    flex-shrink: 0;
+}
+
+/* ── Map Result ── */
+#result-map {
+    flex: 1;
+    position: relative;
+}
+
+/* ── Vehicle Animation ── */
+.vehicle-marker {
+    font-size: 20px;
+    animation: vehicleBounce 0.5s ease infinite alternate;
+}
+
+@keyframes vehicleBounce {
+    from { transform: translateY(0); }
+    to   { transform: translateY(-3px); }
+}
+
+/* ── Journey summary ── */
+.journey-path {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--off-white);
+    border: 1px solid var(--card-border);
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 1rem;
+    font-size: 0.82rem;
+}
+
+.journey-arrow {
+    color: var(--text-muted);
+    flex-shrink: 0;
+}
+
+/* Share/export */
+.share-hint {
+    text-align: center;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    padding: 0.5rem;
+}
+
+@media (max-width: 900px) {
+    .result-layout { grid-template-columns: 1fr; }
+    #result-map { height: 50vh; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="result-layout">
+
+    <!-- ── Result Panel ── -->
+    <div class="result-panel">
+        <div class="result-header">
+            <div class="result-badge" id="algo-badge">
+                <span>●</span> <span id="algo-name-badge">Loading...</span>
+            </div>
+            <div class="result-title">🗺️ Route Found!</div>
+            <div class="result-subtitle">Your optimized delivery route in Amravati</div>
+        </div>
+
+        <div class="result-body">
+
+            <!-- Journey indicator -->
+            <div class="journey-path">
+                <span>🟢</span>
+                <span style="font-weight:600" id="src-label">Source</span>
+                <span class="journey-arrow">→</span>
+                <span style="font-weight:600" id="dst-label">Destination</span>
+                <span>🔴</span>
+                <span class="algo-pill" id="algo-pill-inline">A*</span>
+            </div>
+
+            <!-- Big metrics -->
+            <div class="big-metric-grid">
+                <div class="big-metric cyan-accent">
+                    <div class="bm-icon">📏</div>
+                    <div class="bm-val">
+                        <span id="res-dist">—</span>
+                        <span class="bm-unit">km</span>
+                    </div>
+                    <div class="bm-label">Total Distance</div>
+                </div>
+
+                <div class="big-metric green-accent">
+                    <div class="bm-icon">⏱️</div>
+                    <div class="bm-val">
+                        <span id="res-time">—</span>
+                        <span class="bm-unit">min</span>
+                    </div>
+                    <div class="bm-label">Travel Time</div>
+                </div>
+
+                <div class="big-metric amber-accent">
+                    <div class="bm-icon">💰</div>
+                    <div class="bm-val">₹<span id="res-cost">—</span></div>
+                    <div class="bm-label">Delivery Cost</div>
+                </div>
+
+                <div class="big-metric navy-accent">
+                    <div class="bm-icon">🔢</div>
+                    <div class="bm-val"><span id="res-nodes">—</span></div>
+                    <div class="bm-label">Nodes Explored</div>
+                </div>
+            </div>
+
+            <!-- Traffic -->
+            <div class="traffic-bar-wrap">
+                <div class="traffic-level-indicator">
+                    <div class="traffic-dot" id="traffic-dot"></div>
+                    <div>
+                        <div style="font-weight:600;font-size:0.875rem">Traffic: <span id="traffic-level">—</span></div>
+                        <div style="color:var(--text-muted);font-size:0.75rem" id="traffic-desc">Calculating...</div>
+                    </div>
+                </div>
+                <div class="bars-row" id="traffic-bars"></div>
+            </div>
+
+            <!-- Algorithm comparison -->
+            <div class="comparison-block">
+                <div class="comparison-title">🔬 Algorithm Comparison</div>
+
+                <div class="comparison-row">
+                    <div class="comp-left"><span id="cmp-astar-dist" class="text-green">—</span> km</div>
+                    <div class="comp-label">Distance</div>
+                    <div class="comp-right"><span id="cmp-ucs-dist" class="text-cyan">—</span> km</div>
+                </div>
+
+                <div class="comparison-row">
+                    <div class="comp-left"><span id="cmp-astar-time">—</span> min</div>
+                    <div class="comp-label">Time</div>
+                    <div class="comp-right"><span id="cmp-ucs-time">—</span> min</div>
+                </div>
+
+                <div class="comparison-row">
+                    <div class="comp-left">₹<span id="cmp-astar-cost">—</span></div>
+                    <div class="comp-label">Cost</div>
+                    <div class="comp-right">₹<span id="cmp-ucs-cost">—</span></div>
+                </div>
+
+                <div class="comparison-row">
+                    <div class="comp-left"><span id="cmp-astar-nodes">—</span></div>
+                    <div class="comp-label">Nodes Explored</div>
+                    <div class="comp-right"><span id="cmp-ucs-nodes">—</span></div>
+                </div>
+
+                <div style="text-align:center;margin-top:10px;display:flex;justify-content:center;gap:12px;font-size:0.75rem">
+                    <span class="algo-pill green-pill">● A* Algorithm</span>
+                    <span class="algo-pill cyan-pill">● UCS Algorithm</span>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Actions -->
+        <div class="action-grid">
+            <a href="/optimize" class="btn btn-outline" style="text-align:center;justify-content:center">
+                <i class="fas fa-redo"></i> New Route
+            </a>
+            <a href="/dashboard" class="btn btn-primary" style="text-align:center;justify-content:center">
+                <i class="fas fa-chart-bar"></i> Dashboard
+            </a>
+            <a href="/feedback" class="btn btn-green" style="text-align:center;justify-content:center">
+                <i class="fas fa-star"></i> Rate Us
+            </a>
+            <a href="/home" class="btn btn-secondary" style="text-align:center;justify-content:center">
+                <i class="fas fa-home"></i> Home
+            </a>
+        </div>
+    </div>
+
+    <!-- ── Result Map ── -->
+    <div id="result-map"></div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// ─────────────────────────────────────────
+// Load result from session storage
+// ─────────────────────────────────────────
+const rawData = sessionStorage.getItem('routeResult');
+
+if (!rawData) {
+    showToast('No route data found. Please run optimization first.', 'warning');
+    setTimeout(() => window.location.href = '/optimize', 2000);
+}
+
+const data = JSON.parse(rawData);
+const selected = data.selected;
+const algo = data.algo;
+
+// ─────────────────────────────────────────
+// Map Setup
+// ─────────────────────────────────────────
+const map = L.map('result-map', {
+    center: [data.src.lat, data.src.lng],
+    zoom: 13,
+    zoomControl: true
+});
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap | Raasta Mantra'
+}).addTo(map);
+
+// ─────────────────────────────────────────
+// Draw selected route with animation
+// ─────────────────────────────────────────
+const routeColor = algo === 'astar' ? '#00c853' : '#00e5ff';
+const routeCoords = selected.path.map(c => [c[0], c[1]]);
+
+// Draw faded other route
+const otherAlgo = algo === 'astar' ? 'ucs' : 'astar';
+const otherColor = otherAlgo === 'astar' ? '#00c853' : '#00e5ff';
+const otherCoords = data[otherAlgo].path.map(c => [c[0], c[1]]);
+
+if (otherCoords.length > 1) {
+    L.polyline(otherCoords, {
+        color: otherColor,
+        weight: 3,
+        opacity: 0.25,
+        dashArray: '8,6'
+    }).addTo(map);
+}
+
+// Animate main route
+let currentIdx = 1;
+const mainPoly = L.polyline([routeCoords[0]], {
+    color: routeColor,
+    weight: 6,
+    opacity: 0.9,
+    lineCap: 'round',
+    lineJoin: 'round'
+}).addTo(map);
+
+const animInterval = setInterval(() => {
+    if (currentIdx < routeCoords.length) {
+        mainPoly.addLatLng(routeCoords[currentIdx]);
+        currentIdx++;
+    } else {
+        clearInterval(animInterval);
+        // Start vehicle animation
+        startVehicleAnimation(routeCoords);
+    }
+}, 30);
+
+// ─────────────────────────────────────────
+// Source / Destination Markers
+// ─────────────────────────────────────────
+const greenIcon = L.divIcon({
+    html: `<div style="background:#00c853;width:18px;height:18px;border-radius:50%;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,200,83,0.5)"></div>`,
+    iconSize:[18,18], iconAnchor:[9,9], className:''
+});
+const redIcon = L.divIcon({
+    html: `<div style="background:#ff5252;width:18px;height:18px;border-radius:50%;border:3px solid #fff;box-shadow:0 2px 8px rgba(255,82,82,0.5)"></div>`,
+    iconSize:[18,18], iconAnchor:[9,9], className:''
+});
+
+L.marker([data.src.lat, data.src.lng], { icon: greenIcon })
+    .addTo(map)
+    .bindPopup('<b>🟢 Source</b>');
+L.marker([data.dst.lat, data.dst.lng], { icon: redIcon })
+    .addTo(map)
+    .bindPopup('<b>🔴 Destination</b>');
+
+// Fit bounds
+if (routeCoords.length > 0) {
+    map.fitBounds(L.latLngBounds(routeCoords), { padding: [50,50] });
+}
+
+// ─────────────────────────────────────────
+// Vehicle Animation
+// ─────────────────────────────────────────
+let vehicleMarker = null;
+
+function startVehicleAnimation(coords) {
+    if (coords.length < 2) return;
+
+    const emoji = { delivery: '🚚', urgent: '🚨', normal: '🚗' }[data.category] || '🚗';
+
+    const icon = L.divIcon({
+        html: `<div class="vehicle-marker">${emoji}</div>`,
+        iconSize: [28, 28],
+        iconAnchor: [14, 14],
+        className: ''
+    });
+
+    vehicleMarker = L.marker(coords[0], { icon, zIndexOffset: 1000 }).addTo(map);
+
+    let vi = 0;
+    const totalSteps = coords.length;
+
+    const moveVehicle = setInterval(() => {
+        if (vi < totalSteps) {
+            vehicleMarker.setLatLng(coords[vi]);
+            vi++;
+        } else {
+            // Loop the animation
+            vi = 0;
+        }
+    }, 80);
+}
+
+// ─────────────────────────────────────────
+// Populate Metrics
+// ─────────────────────────────────────────
+document.getElementById('res-dist').textContent   = selected.distance_km.toFixed(2);
+document.getElementById('res-time').textContent   = selected.time_minutes.toFixed(0);
+document.getElementById('res-cost').textContent   = selected.cost_inr.toFixed(0);
+document.getElementById('res-nodes').textContent  = selected.nodes_explored;
+
+document.getElementById('src-label').textContent  = `${data.src.lat.toFixed(4)}, ${data.src.lng.toFixed(4)}`;
+document.getElementById('dst-label').textContent  = `${data.dst.lat.toFixed(4)}, ${data.dst.lng.toFixed(4)}`;
+
+// Algorithm badge
+const algoLabel = algo === 'astar' ? 'A* — Shortest Path' : 'UCS — Optimal Cost';
+document.getElementById('algo-name-badge').textContent = algoLabel;
+document.getElementById('algo-badge').style.borderColor = routeColor;
+document.getElementById('algo-badge').style.color = routeColor;
+document.getElementById('algo-badge').querySelector('span').style.color = routeColor;
+
+document.getElementById('algo-pill-inline').textContent = algo === 'astar' ? 'A*' : 'UCS';
+document.getElementById('algo-pill-inline').className = `algo-pill ${algo === 'astar' ? 'green-pill' : 'cyan-pill'}`;
+
+// Traffic
+const traffic = data.traffic || 'Moderate';
+const tDot = document.getElementById('traffic-dot');
+const tLevel = document.getElementById('traffic-level');
+const tDesc = document.getElementById('traffic-desc');
+
+tLevel.textContent = traffic;
+tDot.classList.add(traffic.toLowerCase());
+
+const tDescs = {
+    'Low': 'Light traffic — expect smooth journey',
+    'Moderate': 'Moderate congestion — slight delays',
+    'High': 'Heavy traffic — significant delays expected'
+};
+tDesc.textContent = tDescs[traffic] || '';
+
+// Traffic bars
+const barsContainer = document.getElementById('traffic-bars');
+const barCount = { Low: 3, Moderate: 6, High: 10 }[traffic] || 5;
+const totalBars = 10;
+const tClass = traffic.toLowerCase();
+
+for (let i = 0; i < totalBars; i++) {
+    const bar = document.createElement('div');
+    bar.className = `traffic-bar ${i < barCount ? 'active ' + tClass : ''}`;
+    bar.style.setProperty('--i', i);
+    const heights = [60, 75, 55, 90, 70, 85, 65, 80, 60, 75];
+    bar.style.height = heights[i % heights.length] + '%';
+    bar.style.alignSelf = 'flex-end';
+    barsContainer.appendChild(bar);
+}
+
+// Comparison table
+document.getElementById('cmp-astar-dist').textContent  = data.astar.distance_km.toFixed(2);
+document.getElementById('cmp-ucs-dist').textContent    = data.ucs.distance_km.toFixed(2);
+document.getElementById('cmp-astar-time').textContent  = data.astar.time_minutes.toFixed(0);
+document.getElementById('cmp-ucs-time').textContent    = data.ucs.time_minutes.toFixed(0);
+document.getElementById('cmp-astar-cost').textContent  = data.astar.cost_inr.toFixed(0);
+document.getElementById('cmp-ucs-cost').textContent    = data.ucs.cost_inr.toFixed(0);
+document.getElementById('cmp-astar-nodes').textContent = data.astar.nodes_explored;
+document.getElementById('cmp-ucs-nodes').textContent   = data.ucs.nodes_explored;
+</script>
+{% endblock %}

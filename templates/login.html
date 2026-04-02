@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raasta Mantra Amravati</title>
+    <link rel="icon" type="image/jpeg" href="{{ url_for('static', filename='images/logo.jpg') }}">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        :root {
+            --navy: #0a0f2e;
+            --navy-mid: #111a45;
+            --cyan: #00e5ff;
+            --cyan-dim: #00b4d8;
+            --amber: #ffc107;
+            --green: #00c853;
+            --white: #ffffff;
+            --font-display: 'Syne', sans-serif;
+            --font-body: 'DM Sans', sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background: var(--navy);
+            min-height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* ── Left Panel ── */
+        .left-panel {
+            flex: 1;
+            background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 4rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Animated background circles */
+        .bg-circle {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.07;
+            animation: floatCircle 8s ease-in-out infinite;
+        }
+
+        .bg-circle:nth-child(1) {
+            width: 400px;
+            height: 400px;
+            background: var(--cyan);
+            top: -100px;
+            right: -100px;
+            animation-delay: 0s;
+        }
+
+        .bg-circle:nth-child(2) {
+            width: 250px;
+            height: 250px;
+            background: var(--green);
+            bottom: 50px;
+            left: -50px;
+            animation-delay: 2s;
+        }
+
+        .bg-circle:nth-child(3) {
+            width: 150px;
+            height: 150px;
+            background: var(--amber);
+            top: 40%;
+            right: 20%;
+            animation-delay: 4s;
+        }
+
+        @keyframes floatCircle {
+
+            0%,
+            100% {
+                transform: translateY(0) scale(1);
+            }
+
+            50% {
+                transform: translateY(-20px) scale(1.05);
+            }
+        }
+
+        /* Map grid overlay */
+        .map-grid {
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(0, 229, 255, 0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 229, 255, 0.04) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        /* Road lines illustration */
+        .road-svg {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            opacity: 0.15;
+        }
+
+        .brand-logo {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, var(--cyan), var(--cyan-dim));
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            margin-bottom: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .brand-title {
+            font-family: var(--font-display);
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--white);
+            line-height: 1.1;
+            margin-bottom: 1rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .brand-title span {
+            color: var(--cyan);
+        }
+
+        .brand-subtitle {
+            color: rgba(255, 255, 255, 0.55);
+            font-size: 1rem;
+            line-height: 1.6;
+            max-width: 380px;
+            position: relative;
+            z-index: 1;
+            margin-bottom: 2.5rem;
+        }
+
+        .feature-list {
+            list-style: none;
+            position: relative;
+            z-index: 1;
+        }
+
+        .feature-list li {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .feature-list li .icon {
+            width: 28px;
+            height: 28px;
+            background: rgba(0, 229, 255, 0.15);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--cyan);
+            font-size: 12px;
+        }
+
+        /* ── Right Panel (Login Form) ── */
+        .right-panel {
+            width: 480px;
+            background: var(--white);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 3rem;
+            overflow-y: auto;
+        }
+
+        .login-header {
+            margin-bottom: 2rem;
+        }
+
+        .login-title {
+            font-family: var(--font-display);
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--navy);
+            margin-bottom: 0.5rem;
+        }
+
+        .login-subtitle {
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        /* ── Avatar Selection ── */
+        .avatar-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .avatar-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .avatar-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+        }
+
+        .avatar-option {
+            width: 100%;
+            aspect-ratio: 1;
+            border: 3px solid #e2e8f0;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #f8fafc;
+        }
+
+        .avatar-option:hover {
+            border-color: var(--cyan);
+            transform: scale(1.05);
+        }
+
+        .avatar-option.selected {
+            border-color: var(--cyan);
+            background: rgba(0, 229, 255, 0.1);
+            box-shadow: 0 0 0 3px rgba(0, 229, 255, 0.2);
+            transform: scale(1.08);
+        }
+
+        /* ── Form ── */
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 13px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-family: var(--font-body);
+            font-size: 0.95rem;
+            color: var(--navy);
+            background: #f8fafc;
+            transition: all 0.2s;
+            outline: none;
+        }
+
+        .form-control:focus {
+            border-color: var(--cyan);
+            background: var(--white);
+            box-shadow: 0 0 0 3px rgba(0, 229, 255, 0.15);
+        }
+
+        .input-with-icon {
+            position: relative;
+        }
+
+        .input-with-icon .form-control {
+            padding-left: 44px;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            font-size: 16px;
+        }
+
+        /* ── Submit Button ── */
+        .btn-login {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, var(--navy), var(--navy-mid));
+            color: var(--white);
+            border: none;
+            border-radius: 10px;
+            font-family: var(--font-display);
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 0.5rem;
+        }
+
+        .btn-login:hover {
+            background: linear-gradient(135deg, var(--navy-mid), var(--cyan-dim));
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(10, 15, 46, 0.3);
+        }
+
+        .btn-login:active {
+            transform: translateY(0);
+        }
+
+        .btn-login .btn-icon {
+            font-size: 1.1rem;
+            transition: transform 0.3s;
+        }
+
+        .btn-login:hover .btn-icon {
+            transform: translateX(4px);
+        }
+
+        /* ── City badge ── */
+        .city-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(0, 229, 255, 0.1);
+            border: 1px solid rgba(0, 229, 255, 0.3);
+            color: var(--cyan);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            margin-bottom: 2rem;
+        }
+
+        /* ── Error ── */
+        .error-msg {
+            background: rgba(255, 82, 82, 0.1);
+            border: 1px solid rgba(255, 82, 82, 0.3);
+            color: #ef4444;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            margin-top: 10px;
+            display: none;
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 900px) {
+            .left-panel {
+                display: none;
+            }
+
+            .right-panel {
+                width: 100%;
+            }
+        }
+
+        /* ── Entrance animations ── */
+        .right-panel>* {
+            animation: slideRight 0.5s ease forwards;
+            opacity: 0;
+        }
+
+        .right-panel>*:nth-child(1) {
+            animation-delay: 0.1s;
+        }
+
+        .right-panel>*:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .right-panel>*:nth-child(3) {
+            animation-delay: 0.3s;
+        }
+
+        .right-panel>*:nth-child(4) {
+            animation-delay: 0.35s;
+        }
+
+        .right-panel>*:nth-child(5) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes slideRight {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ── Left Panel ── -->
+    <div class="left-panel">
+        <div class="bg-circle"></div>
+        <div class="bg-circle"></div>
+        <div class="bg-circle"></div>
+        <div class="map-grid"></div>
+
+        <!-- Animated road SVG background -->
+        <svg class="road-svg" viewBox="0 0 800 200" xmlns="http://www.w3.org/2000/svg">
+            <path d="M0,150 Q200,50 400,120 T800,80" stroke="#00e5ff" stroke-width="2" fill="none" />
+            <path d="M0,100 Q300,180 600,90 T800,140" stroke="#00c853" stroke-width="1.5" fill="none" />
+            <circle cx="200" cy="95" r="6" fill="#00e5ff" />
+            <circle cx="600" cy="95" r="6" fill="#00c853" />
+            <circle cx="400" cy="115" r="4" fill="#ffc107" />
+        </svg>
+
+        <div
+            style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem; position: relative; z-index: 1;">
+            <div class="brand-logo" style="background: transparent; margin-bottom: 0;">
+                <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="Raasta Mantra Logo"
+                    style="width: 100%; height: 100%; border-radius: 16px; object-fit: contain;">
+            </div>
+            <div
+                style="font-family: var(--font-display); font-size: 2.2rem; font-weight: 800; color: var(--white); line-height: 1.1;">
+                Raasta Mantra
+            </div>
+        </div>
+
+        <div class="city-badge">
+            <i class="fas fa-map-marker-alt"></i>
+            Amravati, Maharashtra, India
+        </div>
+
+        <h1 class="brand-title">
+            AI Delivery<br>
+            <span>Route Optimizer</span>
+        </h1>
+
+        <p class="brand-subtitle">
+            Find the shortest and most optimal delivery routes using A* and Uniform Cost Search algorithms on Amravati's
+            real road network.
+        </p>
+
+        <ul class="feature-list">
+            <li>
+                <span class="icon"><i class="fas fa-route"></i></span>
+                A* & UCS Algorithm Implementation
+            </li>
+            <li>
+                <span class="icon"><i class="fas fa-map"></i></span>
+                Real Amravati Road Network (OSMnx)
+            </li>
+            <li>
+                <span class="icon"><i class="fas fa-chart-line"></i></span>
+                Analytics Dashboard & Visualization
+            </li>
+            <li>
+                <span class="icon"><i class="fas fa-database"></i></span>
+                MongoDB-Powered Data Storage
+            </li>
+        </ul>
+    </div>
+
+    <!-- ── Right Panel ── -->
+    <div class="right-panel">
+
+        <div class="login-header">
+            <h2 class="login-title">Welcome Back 👋</h2>
+            <p class="login-subtitle">Enter your details to start optimizing routes</p>
+        </div>
+
+        <!-- Avatar Selection -->
+        <div class="avatar-section">
+            <span class="avatar-label">Choose Your Avatar</span>
+            <div class="avatar-grid" id="avatar-grid">
+                <div class="avatar-option selected" data-avatar="🚚" onclick="selectAvatar(this)">🚚</div>
+                <div class="avatar-option" data-avatar="🏍️" onclick="selectAvatar(this)">🏍️</div>
+                <div class="avatar-option" data-avatar="🚗" onclick="selectAvatar(this)">🚗</div>
+                <div class="avatar-option" data-avatar="🚴" onclick="selectAvatar(this)">🚴</div>
+                <div class="avatar-option" data-avatar="✈️" onclick="selectAvatar(this)">✈️</div>
+                <div class="avatar-option" data-avatar="👨‍💼" onclick="selectAvatar(this)">👨‍💼</div>
+                <div class="avatar-option" data-avatar="👩‍💼" onclick="selectAvatar(this)">👩‍💼</div>
+                <div class="avatar-option" data-avatar="🤖" onclick="selectAvatar(this)">🤖</div>
+                <div class="avatar-option" data-avatar="🧑‍💻" onclick="selectAvatar(this)">🧑‍💻</div>
+                <div class="avatar-option" data-avatar="🦸" onclick="selectAvatar(this)">🦸</div>
+            </div>
+        </div>
+
+        <!-- Login Form -->
+        <div class="form-group">
+            <label class="form-label">Username *</label>
+            <div class="input-with-icon">
+                <i class="fas fa-user input-icon"></i>
+                <input type="text" class="form-control" id="username" placeholder="Enter your name" autocomplete="off">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Email (Optional)</label>
+            <div class="input-with-icon">
+                <i class="fas fa-envelope input-icon"></i>
+                <input type="email" class="form-control" id="email" placeholder="your@email.com" autocomplete="off">
+            </div>
+        </div>
+
+        <div class="error-msg" id="error-msg">
+            <i class="fas fa-exclamation-circle"></i>
+            <span id="error-text">Please enter your username</span>
+        </div>
+
+        <button class="btn-login" onclick="handleLogin()">
+            <span>Start Optimizing</span>
+            <span class="btn-icon"><i class="fas fa-arrow-right"></i></span>
+        </button>
+
+    </div>
+
+    <script>
+        let selectedAvatar = '🚚';
+
+        function selectAvatar(el) {
+            document.querySelectorAll('.avatar-option').forEach(a => a.classList.remove('selected'));
+            el.classList.add('selected');
+            selectedAvatar = el.getAttribute('data-avatar');
+        }
+
+        async function handleLogin() {
+            const username = document.getElementById('username').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const errorDiv = document.getElementById('error-msg');
+            const errorTxt = document.getElementById('error-text');
+
+            if (!username) {
+                errorTxt.textContent = 'Username is required to continue.';
+                errorDiv.style.display = 'flex';
+                errorDiv.style.alignItems = 'center';
+                errorDiv.style.gap = '8px';
+                document.getElementById('username').focus();
+                return;
+            }
+
+            errorDiv.style.display = 'none';
+
+            const btn = document.querySelector('.btn-login');
+            btn.innerHTML = '<span class="spinner-sm"></span> <span>Logging in...</span>';
+            btn.disabled = true;
+
+            try {
+                const resp = await fetch('/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, email, avatar: selectedAvatar })
+                });
+                const data = await resp.json();
+
+                if (data.success) {
+                    btn.innerHTML = '<span>✅ Welcome, ' + data.username + '!</span>';
+                    setTimeout(() => window.location.href = '/home', 800);
+                } else {
+                    errorTxt.textContent = data.error || 'Login failed. Try again.';
+                    errorDiv.style.display = 'flex';
+                    btn.innerHTML = '<span>Start Optimizing</span><span class="btn-icon"><i class="fas fa-arrow-right"></i></span>';
+                    btn.disabled = false;
+                }
+            } catch (e) {
+                errorTxt.textContent = 'Connection error. Please try again.';
+                errorDiv.style.display = 'flex';
+                btn.innerHTML = '<span>Start Optimizing</span><span class="btn-icon"><i class="fas fa-arrow-right"></i></span>';
+                btn.disabled = false;
+            }
+        }
+
+        // Allow Enter key
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Enter') handleLogin();
+        });
+
+        // Spinner style
+        const style = document.createElement('style');
+        style.textContent = `.spinner-sm { display:inline-block; width:16px; height:16px; border:2px solid rgba(255,255,255,0.3); border-top-color:#fff; border-radius:50%; animation:spin 0.7s linear infinite; }
+@keyframes spin { to { transform:rotate(360deg); } }`;
+        document.head.appendChild(style);
+    </script>
+</body>
+
+</html>

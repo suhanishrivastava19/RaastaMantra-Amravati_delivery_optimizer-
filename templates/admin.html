@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raasta Mantra — Admin Panel</title>
+    <!-- Add Favicon -->
+    <link rel="icon" type="image/jpeg" href="{{ url_for('static', filename='images/logo.jpg') }}">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    
+    <style>
+        :root {
+            --navy:       #0a0f2e;
+            --navy-mid:   #111a45;
+            --cyan:       #00e5ff;
+            --cyan-dim:   #00b4d8;
+            --amber:      #ffc107;
+            --card-bg:    #ffffff;
+            --card-border:#e2e8f0;
+            --text-main:  #0a0f2e;
+            --text-muted: #64748b;
+            --off-white:  #f8fafc;
+            --font-display: 'Syne', sans-serif;
+            --font-body:    'DM Sans', sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: var(--font-body);
+            background: var(--off-white);
+            color: var(--text-main);
+            min-height: 100vh;
+        }
+
+        .admin-navbar {
+            background: var(--navy);
+            padding: 0 2rem;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+
+        .navbar-logo {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            object-fit: contain;
+        }
+
+        .navbar-title {
+            font-family: var(--font-display);
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .navbar-title span {
+            color: var(--cyan);
+        }
+
+        .badge-admin {
+            background: rgba(0, 229, 255, 0.15);
+            color: var(--cyan);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            border: 1px solid rgba(0, 229, 255, 0.3);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 3rem auto;
+            padding: 0 1.5rem;
+        }
+
+        .page-header {
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        .page-title {
+            font-family: var(--font-display);
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--navy);
+        }
+
+        .page-subtitle {
+            color: var(--text-muted);
+            margin-top: 5px;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .data-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(10, 15, 46, 0.05);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-header {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--card-border);
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--navy);
+            background: rgba(248, 250, 252, 0.5);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-body {
+            padding: 1.5rem;
+            flex: 1;
+        }
+
+        .kpi-block {
+            text-align: center;
+            padding: 1.5rem 0;
+        }
+
+        .kpi-value {
+            font-family: var(--font-display);
+            font-size: 3.5rem;
+            font-weight: 800;
+            color: var(--cyan-dim);
+            line-height: 1;
+            margin-bottom: 0.5rem;
+        }
+
+        .kpi-label {
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-size: 0.85rem;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 250px;
+            width: 100%;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        thead {
+            background: var(--navy);
+            color: #ffffff;
+        }
+
+        th {
+            padding: 14px 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        td {
+            padding: 14px 20px;
+            border-bottom: 1px solid var(--card-border);
+            color: var(--text-main);
+            font-size: 0.9rem;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tbody tr:hover {
+            background: rgba(0, 229, 255, 0.03);
+        }
+
+        .user-cell {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .avatar {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--cyan), var(--cyan-dim));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .rating-stars {
+            color: var(--amber);
+            font-size: 0.9rem;
+        }
+
+        .empty-state {
+            padding: 3rem;
+            text-align: center;
+            color: var(--text-muted);
+        }
+
+        .empty-icon {
+            font-size: 3rem;
+            color: var(--card-border);
+            margin-bottom: 1rem;
+        }
+
+        @media (max-width: 900px) {
+            .dashboard-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="admin-navbar">
+        <a href="#" class="navbar-brand">
+            <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="Logo" class="navbar-logo">
+            <span class="navbar-title">Raasta <span>Mantra</span></span>
+        </a>
+        <div class="badge-admin">
+            <i class="fas fa-shield-alt"></i> Admin Interface
+        </div>
+    </nav>
+
+    <div class="container">
+        
+        <!-- Feedback Dashboard Section -->
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Analytics & Feedback</h1>
+                <p class="page-subtitle">Real-time engagement metrics from Amravati Delivery users.</p>
+            </div>
+        </div>
+
+        <div class="dashboard-grid">
+            <!-- KPI / Summary Card -->
+            <div class="data-card">
+                <div class="card-header">
+                    <i class="fas fa-star" style="color:var(--amber)"></i> Average Rating
+                </div>
+                <div class="card-body" style="display:flex; flex-direction:column; justify-content:center;">
+                    {% set total_ratings = feedbacks|length %}
+                    {% set sum_ratings = 0 %}
+                    {% for fb in feedbacks %}
+                        {% set sum_ratings = sum_ratings + fb.rating %}
+                    {% endfor %}
+                    
+                    <div class="kpi-block">
+                        <div class="kpi-value">
+                            {% if total_ratings > 0 %}
+                                {{ "%.1f"|format(sum_ratings / total_ratings) }}
+                            {% else %}
+                                0.0
+                            {% endif %}
+                        </div>
+                        <div class="kpi-label">Out of 5 Stars</div>
+                    </div>
+                    <div style="text-align:center; color: var(--text-muted); font-size: 0.9rem;">
+                        Total Reviews: <strong>{{ total_ratings }}</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chart Card -->
+            <div class="data-card">
+                <div class="card-header">
+                    <i class="fas fa-chart-bar" style="color:var(--cyan)"></i> Rating Distribution
+                </div>
+                <div class="card-body">
+                    {% if total_ratings > 0 %}
+                        <div class="chart-container">
+                            <canvas id="feedbackChart"></canvas>
+                        </div>
+                    {% else %}
+                        <div class="empty-state" style="padding: 2rem;">
+                            <div class="empty-icon"><i class="fas fa-chart-pie"></i></div>
+                            <p>No feedback data to visualize yet.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Feedback Data Table -->
+        <div class="data-card" style="margin-bottom: 3rem;">
+            <div class="card-header">
+                <span><i class="fas fa-comments text-cyan"></i> User Feedback</span>
+                <span class="badge-admin" style="background: rgba(10,15,46,0.1); color: var(--navy); border:none;">Recent</span>
+            </div>
+            {% if feedbacks %}
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>User (Name / ID)</th>
+                            <th>Rating</th>
+                            <th>Message</th>
+                            <th>Date Submited</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for fb in feedbacks %}
+                        <tr>
+                            <td>
+                                <strong>{{ fb.name }}</strong>
+                                <div style="font-size: 0.8rem; color: var(--text-muted);">@{{ fb.username }}</div>
+                            </td>
+                            <td>
+                                <div class="rating-stars">
+                                    {% for i in range(fb.rating|int) %}★{% endfor %}{% for i in range(5 - fb.rating|int) %}☆{% endfor %}
+                                </div>
+                            </td>
+                            <td style="max-width:300px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="{{ fb.message }}">
+                                {{ fb.message if fb.message else '<span style="color:#a0aec0;font-style:italic;">No message provided</span>'|safe }}
+                            </td>
+                            <td style="white-space:nowrap;">
+                                <script>document.write(new Date("{{ fb.timestamp }}").toLocaleDateString());</script>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-icon"><i class="fas fa-comment-slash"></i></div>
+                <p>No user feedback has been submitted.</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Users Table -->
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">User Accounts</h1>
+                <p class="page-subtitle">Showing all registered users connected via MongoDB.</p>
+            </div>
+            <div style="font-size: 0.9rem; color: var(--text-muted);">
+                <i class="fas fa-users"></i> Total Users: <strong>{{ users|length }}</strong>
+            </div>
+        </div>
+
+        <div class="data-card" style="margin-bottom: 3rem;">
+            {% if users %}
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Email Address</th>
+                            <th>Account Created</th>
+                            <th>Last Login</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr>
+                            <td>
+                                <div class="user-cell">
+                                    <div class="avatar">{{ user.avatar if user.avatar else '👤' }}</div>
+                                    <strong>{{ user.username }}</strong>
+                                </div>
+                            </td>
+                            <td style="color: var(--text-muted);">
+                                {{ user.email if user.email else '<span style="opacity:0.5; font-style:italic">Not provided</span>'|safe }}
+                            </td>
+                            <td style="white-space:nowrap;">
+                                {{ user.created_at.strftime('%B %d, %Y') if user.created_at else 'Unknown' }}
+                            </td>
+                            <td style="white-space:nowrap;">
+                                <script>document.write(new Date("{{ user.login_time }}").toLocaleString());</script>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-icon"><i class="fas fa-user-slash"></i></div>
+                <h3>No Users Found.</h3>
+            </div>
+            {% endif %}
+        </div>
+
+    </div>
+
+    <!-- Inject Chart.js Logic cleanly avoiding IDE syntax errors -->
+    <script id="feedback-data" type="application/json">
+        {{ feedbacks | tojson | safe }}
+    </script>
+    <script>
+        const dataElement = document.getElementById('feedback-data');
+        if (dataElement && dataElement.textContent.trim()) {
+            const feedbacks = JSON.parse(dataElement.textContent);
+            
+            if (feedbacks && feedbacks.length > 0) {
+                // Distribution logic
+                let counts = {1:0, 2:0, 3:0, 4:0, 5:0};
+                feedbacks.forEach(item => {
+                    const rating = parseInt(item.rating) || 0;
+                    if(counts[rating] !== undefined) {
+                        counts[rating]++;
+                    }
+                });
+
+                const ctx = document.getElementById('feedbackChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['1 Star', '2 Stars', '3 Stars', '4 Stars', '5 Stars'],
+                        datasets: [{
+                            label: 'Number of Ratings',
+                            data: [counts[1], counts[2], counts[3], counts[4], counts[5]],
+                            backgroundColor: [
+                                'rgba(255, 82, 82, 0.7)',
+                                'rgba(255, 152, 0, 0.7)',
+                                'rgba(255, 193, 7, 0.7)',
+                                'rgba(139, 195, 74, 0.7)',
+                                'rgba(0, 200, 83, 0.7)'
+                            ],
+                            borderColor: [
+                                '#ff5252',
+                                '#ff9800',
+                                '#ffc107',
+                                '#8bc34a',
+                                '#00c853'
+                            ],
+                            borderWidth: 1,
+                            borderRadius: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: { stepSize: 1 }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+    </script>
+</body>
+</html>
